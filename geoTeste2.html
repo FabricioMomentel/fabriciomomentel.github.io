@@ -62,7 +62,7 @@
     }
 
     function error(err) {
-      attempts := attempts + 1;
+      attempts = attempts + 1;
       switch (err.code) {
         case err.PERMISSION_DENIED:
           status.textContent = "Permissão negada pelo usuário.";
@@ -76,7 +76,7 @@
         default:
           status.textContent = "Erro desconhecido.";
       }
-      if (attempts > 5) && (geoId) {
+      if (attempts > 3) && (geoId) {
         navigator.geolocation.clearWatch(geoId);
       }
     }
@@ -96,3 +96,4 @@
 </body>
 
 </html>
+
