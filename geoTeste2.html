@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Rastreamento em tempo real</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+    #status {
+      padding: 10px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div id="status">Obtendo localização...</div>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const status = document.getElementById('status');
+    let map, marker, accuracyCircle;
+
+    function initMap(lat, lon) {
+      map = L.map('map').setView([lat, lon], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+    }
+
+    function success(pos) {
+      const { latitude, longitude, accuracy } = pos.coords;
+
+      status.textContent = `Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}, Precisão: ${Math.round(accuracy)}m`;
+
+      if (!map) {
+        // Inicializa o mapa na primeira leitura
+        initMap(latitude, longitude);
+        marker = L.marker([latitude, longitude]).addTo(map);
+        accuracyCircle = L.circle([latitude, longitude], { radius: accuracy }).addTo(map);
+      } else {
+        // Atualiza posição e precisão
+        marker.setLatLng([latitude, longitude]);
+        accuracyCircle.setLatLng([latitude, longitude]);
+        accuracyCircle.setRadius(accuracy);
+        map.panTo([latitude, longitude]);
+      }
+    }
+
+    function error(err) {
+      switch (err.code) {
+        case err.PERMISSION_DENIED:
+          status.textContent = "Permissão negada pelo usuário.";
+          break;
+        case err.POSITION_UNAVAILABLE:
+          status.textContent = "Informações de localização indisponíveis.";
+          break;
+        case err.TIMEOUT:
+          status.textContent = "Tempo de espera esgotado.";
+          break;
+        default:
+          status.textContent = "Erro desconhecido.";
+      }
+    }
+
+    // Inicia rastreamento contínuo
+    if ("geolocation" in navigator) {
+      navigator.geolocation.watchPosition(success, error, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+    } else {
+      status.textContent = "Geolocalização não é suportada neste navegador.";
+    }
+  </script>
+</body>
+</html>

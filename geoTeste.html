@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Teste de Geolocalização</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CSS do Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <h2>Teste de Geolocalização</h2>
+  <p id="status">Obtendo localização...</p>
+  <div id="map"></div>
+
+  <!-- JS do Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    const status = document.getElementById("status");
+
+    function success(pos) {
+      const { latitude, longitude, accuracy } = pos.coords;
+      status.textContent = `Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}, Precisão: ${accuracy}m`;
+
+      // Cria o mapa centrado na posição
+      const map = L.map('map').setView([latitude, longitude], 16);
+
+      // Adiciona o mapa base (OpenStreetMap)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Marca o ponto exato
+      L.marker([latitude, longitude])
+        .addTo(map)
+        .bindPopup(`Você está aqui<br>Precisão: ${accuracy} m`)
+        .openPopup();
+    }
+
+    function error(err) {
+      status.textContent = `Erro (${err.code}): ${err.message}`;
+    }
+
+    navigator.geolocation.getCurrentPosition(success, error, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    });
+  </script>
+</body>
+</html>
