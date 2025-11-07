@@ -33,7 +33,7 @@
 
   <script>
     const status = document.getElementById('status');
-    let map, marker, accuracyCircle;
+    let map, marker, accuracyCircle, geoId, attempts;
 
     function initMap(lat, lon) {
       map = L.map('map').setView([lat, lon], 16);
@@ -62,6 +62,7 @@
     }
 
     function error(err) {
+      attempts := attempts + 1;
       switch (err.code) {
         case err.PERMISSION_DENIED:
           status.textContent = "Permissão negada pelo usuário.";
@@ -75,11 +76,15 @@
         default:
           status.textContent = "Erro desconhecido.";
       }
+      if (attempts > 5) && (geoId) {
+        navigator.geolocation.clearWatch(geoId);
+      }
     }
 
     // Inicia rastreamento contínuo
     if ("geolocation" in navigator) {
-      navigator.geolocation.watchPosition(success, error, {
+      attempts = 0;
+      geoId = navigator.geolocation.watchPosition(success, error, {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0
@@ -89,4 +94,5 @@
     }
   </script>
 </body>
+
 </html>
